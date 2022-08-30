@@ -1,2 +1,2 @@
-# ee542_projects
-ee542_projects
+# EE542 Assignments
+Author: Boyang Xiao

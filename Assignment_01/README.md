@@ -18,6 +18,8 @@
 - **OS:** [*Ubuntu ver. 16.04*](https://ubuntu.com/16-04)
 - **Compiler**: *g++ ver. 5.4.0*
 
+#### [Video Introductions](https://youtu.be/19cGpmTDmJs)
+
 ---
 
 ### Introduction

@@ -11,7 +11,7 @@
 
 - **USC id**:		3326-7302-74
 - **Email**:		<a href="mailto:boyangxi@usc.edu">boyangxi@usc.edu</a>
-- **Github**:	[here](https://github.com/)
+- **Github**:	[here](https://github.com/SeanXiaoby)
 
 #### Dev Environment:
 

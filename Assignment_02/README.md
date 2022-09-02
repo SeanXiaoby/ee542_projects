@@ -116,3 +116,65 @@ If the ELastic IP is associated with a eth1 interface of a instance, we may not 
 - Build the routing model: When Server and Client communicates with each other, the traffic should be like:
   - Server -> Router -> Client
   - Client -> Router -> Server
+  
+### Test Networks connection using Ping cmd and tcpdump cmd
+
+[Tcpdump]() is a very useful tool on Linux which can help us to monitor TCP/UDP packets switching status through a host. We can open up tcpdump on vyOS router VM to monitor if there is any network in/out through the router:
+```shell
+tcpdump -i eth1 host <ServerVM eth0 IP address> or host <ClientVM eth0 IP address>
+```
+
+If we directly ping ServerVM on the client VM like below.
+```shell
+ping <Server eth0 IP address>
+```
+We can surely success because the ServerVM and ClientVM is under the same subnet and they can surely access each other. But we can also notice that there is no networks activity on the router machine, since the Server and CLient communicate with each other directly, but don't go through the router.
+
+<img src="./src/img3-1.png" width="100%">
+
+
+### Configure Routing relations on ServerVM and ClientVM
+
+To make the networks between ServerVM and ClientVM passing through the RouterVM and be routed by the router, we should configure the Routing table on both the ServerVM and ClientVM. If we look into any one of these two 's routing table using:
+```shell
+route -n
+```
+We can find that there is no special routing info. All the networks are routed by default.
+```shell
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.0.2.1        0.0.0.0         UG    100    0        0 eth0
+10.0.2.0        0.0.0.0         255.255.255.0   U     0      0        0 eth0
+10.0.2.1        0.0.0.0         255.255.255.255 UH    100    0        0 eth0
+10.0.3.0        0.0.0.0         255.255.255.0   U     0      0        0 eth1
+```
+
+To be specifc, we should add a **Gateway** for the destination IP address on the both end:
+- For the Client, the destination ip is Server's ip and the gateway is the Router's ip. 
+- For the Server, the destination ip is the client's ip, and the gateway is the Router's ip.
+
+For example, we execute this on the Client side:
+
+```shell
+sudo route add -host <ServerVM eth0 IP address> gw <RouterVM eth1 IP address>
+```
+And we execute this on the Server side:
+
+```shell
+sudo route add -host <ClientVM eth0 IP address> gw <RouterVM eth1 IP address>
+```
+Then we can find an extra rule on the routing table:
+```shell
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         10.0.2.1        0.0.0.0         UG    100    0        0 eth0
+10.0.2.0        0.0.0.0         255.255.255.0   U     0      0        0 eth0
+10.0.2.1        0.0.0.0         255.255.255.255 UH    100    0        0 eth0
+10.0.2.163      10.0.2.64       255.255.255.255 UGH   0      0        0 eth0
+10.0.3.0        0.0.0.0         255.255.255.0   U     0      0        0 eth1
+```
+
+Then we Ping ServerVm from ClientVM again and monitor Router's networks activities. We can find that the Router has networks activities from both Server side and Client side, as shown in the picture below. And we can say that the network communication has been configured as we expected.
+
+ <img src="./src/img3-2.png" width="100%">
+

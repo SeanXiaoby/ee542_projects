@@ -6,4 +6,5 @@
 - **Github**:	[here](https://github.com/)
 ---
 ### Index
-- [Assignment 01](https://github.com/SeanXiaoby/ee542_projects/tree/main/Assignment_01)
+- [Lab 01](https://github.com/SeanXiaoby/ee542_projects/tree/main/Assignment_01)
+- [Lab 02](https://github.com/SeanXiaoby/ee542_projects/tree/main/Assignment_02)

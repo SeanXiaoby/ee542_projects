@@ -25,7 +25,7 @@
 ---
 ## Creating VPC and EC2 instances on AWS
 
-#### VPC configuration
+### VPC configuration
 Click on AWS VPC console and create a new VPC by clicking the button on the upper-right corner
 
 Configurations for VPC (as shown in the following picture):
@@ -42,7 +42,7 @@ Click on the subnets tab on the left side-bar. Add four subnets to the VPC, part
 
 <img src="./src/img1-2.png" width="80%">
 
-#### Get Elastic IP addresses assigned by AWS
+### Get Elastic IP addresses assigned by AWS
 An [elastic ip](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/elastic-ip-addresses-eip.html) addresse is a static IPv4 address designed for dynamic cloud computing. An Elastic IP address is allocated to your AWS account, and is yours until you release it. 
 
 Click the Elastic IP tab on the left side-bar. Allocate **three elastic ip addresses** for further use.
@@ -54,7 +54,7 @@ These three elastic ip addresses can be the public IPv4 addresses for the Server
 
 <img src="./src/img1-3.png" width="80%">
 
-#### Create EC2 (Elastic computing clouds) instances 
+### Create EC2 (Elastic computing clouds) instances 
 [Amazon Elastic Compute Cloud (Amazon EC2)](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/concepts.html) provides scalable computing capacity in the Amazon Web Services (AWS) Cloud. Using Amazon EC2 eliminates your need to invest in hardware up front, so you can develop and deploy applications faster. You can use Amazon EC2 to launch as many or as few virtual servers as you need, configure security and networking, and manage storage. Amazon EC2 enables you to scale up or down to handle changes in requirements or spikes in popularity, reducing your need to forecast traffic.
   - Create one instance and install vyOS 1.3 in it as a RouterVM.
   - Create two instances and install Ubuntu 18.04 in them as a ClientVM and a ServerVM.
@@ -65,7 +65,7 @@ These three elastic ip addresses can be the public IPv4 addresses for the Server
 
 ## Building a Server-Router-Client model on AWS
 
-#### Configure routing relations for EC2 instances
+### Configure routing relations for EC2 instances
 Configure two network interfaces for each instance, one for SSH access, the other for internal networks access.
   - The network interfaces which are connecting to the outside internet **should be associated with one of the elastic IP addresses** we got. The instance can use this interface to connect to the open Internet domains and can also be accessed by outside SSH clients.
   - The network interfaces which are used for internal communications should **share the same subnet domains** for three instances so that they can access to each other in this same subnet domains. Here, we chose 10.0.2.0/24 domain as the internal networks domain.
@@ -81,7 +81,7 @@ The mapping relations between each instance's network interfaces is shown below.
 |Ubuntu-lab02-Server| Ubuntu 18.04| eth0 | 10.0.2.0/24| Router VM| Internal communications|
 |...| ...| eth1| 10.0.4.0/24| Elastic ip #3: lab02-ip-server| SSH access from outside|
 
-#### Launch the instances and access them by SSH
+### Launch the instances and access them by SSH
 Create and launch three instances and wait for them to be prepared. When the instances are ready and the elastic ip addresses are configured right, we should be able to ping these three elastic ip addresses well. [Here](https://networkappers.com/tools/ping-tool) is a little online Ping tool we can use to test that.
 
 **Authentication:** When creating the instances, AWS should create a key pair for them. This is for authentication when logging into the instances, so we don't need to input user/passwd. This should be a [*.pem] file and please keep it safe on the local end.
@@ -111,7 +111,7 @@ If the ELastic IP is associated with a eth1 interface of a instance, we may not 
 
 ## Test networks connections for the model and set routing rules
 
-##### Goal:
+#### Goal:
 - Make these three Vms can connect with each other under the same subnet domain.
 - Build the routing model: When Server and Client communicates with each other, the traffic should be like:
   - Server -> Router -> Client

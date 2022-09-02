@@ -33,3 +33,6 @@
 
 # .vscode/
 .vscode/
+
+# MacOs cache
+.DS_Store

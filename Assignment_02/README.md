@@ -174,7 +174,326 @@ Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
 10.0.3.0        0.0.0.0         255.255.255.0   U     0      0        0 eth1
 ```
 
-Then we Ping ServerVm from ClientVM again and monitor Router's networks activities. We can find that the Router has networks activities from both Server side and Client side, as shown in the picture below. And we can say that the network communication has been configured as we expected.
+Then we Ping ServerVm from ClientVM again and monitor Router's networks activities. We can find that the Router has networks activities from both Server side and Client side, as shown in the picture below. And we can say that **the network communication has been configured as we expected.**
 
  <img src="./src/img3-2.png" width="100%">
 
+
+ ## Other Questions and Answers
+
+**Q: How is amazon able to convert your public IP and reach your private IP on the interface?**
+
+**Answer**: The elastic ip addresses are randomly assigned by AWS and AWS server actually works as a router when an elastic ip is allocated to the user. The AWS server will create a mapping table to route all the network traffic from the public internet from this elastic IP to the instances' private ip address.
+
+**Q: Why SSH goes down if IP is changed on that interface**
+
+**Answer**: When we use SSH to access an EC2 instance, we firstly connect to the elastic ip address associated with this instance, and AWS will route us from this elastic ip to the instance's private ip, then we can control the instance's OS. If we change any IP configurations on the console interface while SSH is still on, SSH connections will lose because we are actually changing the mapping table from the elastic ip to the instance and AWS will have errors routing the networks between us and the instances.
+
+
+---
+
+## Networks measurement with iPerf & iPerf3
+
+[iPerf](https://iperf.fr/iperf-download.php) is a tool for network performance measurement and tuning. It is a cross-platform tool that can produce standardized performance measurements for any network. Iperf has client and server functionality, and can create data streams to measure the throughput between the two ends in one or both directions. Typical iperf output contains a time-stamped report of the amount of data transferred and the throughput measured.
+
+### Install iPerf/iPerf3 on Ubuntu VMs
+
+For either Client VM or Server VM: First, we enter root:
+
+```shell
+sudo su
+```
+
+If  we directly install iPerf/iPerf3, it will fail:
+
+```shell
+sudo apt-get install -y iperf
+```
+
+We should install some dependancies ahead:
+
+```shell
+apt-get install linux-tools-common
+apt-get update
+apt-get install linux-tools-generic linux-cloud-tools-generic
+apt-get install linux-tools-5.4.0-77-generic
+apt-get install linux-cloud-tools-5.4.0-77-generic
+```
+
+Then we install iPerf/iPerf3:
+
+```shell
+sudo apt-get install -y iperf
+```
+
+It may still fail, and we follow the instructions on the terminal:
+
+```shell
+--fix-broken install
+```
+
+If there is an error named "subprocess was killed by signal (Broken pipe)" or something like that, we can refer to [this post](https://stackoverflow.com/questions/72442108/dpkg-dep-error-paste-subprocess-was-killed-by-signalbroken-pipe-ubuntu-wsl2)(Btw, this dude literally saved my ass when installing the dumbasss iPerf😅) and excecute:
+
+```shell
+sudo dpkg -i --force-overwrite <PATH to the overwritten files>
+sudo apt -f install
+```
+
+Find every file that is said to be overwritten on the terminal and fill them into the commands above. For example, on my virtual machines:
+
+```shell
+sudo dpkg -i --force-overwrite /var/cache/apt/archives/linux-azure-5.4-tools-5.4.0-1078_5.4.0-1078.81~18.04.1_amd64.deb
+sudo dpkg -i --force-overwrite /var/cache/apt/archives/linux-gcp-5.4-tools-5.4.0-1078_5.4.0-1078.84~18.04.1_amd64.deb
+sudo dpkg -i --force-overwrite  /var/cache/apt/archives/linux-gke-5.4-tools-5.4.0-1078_5.4.0-1078.84~18.04.1_amd64.deb
+sudo dpkg -i --force-overwrite  /var/cache/apt/archives/linux-oracle-5.4-tools-5.4.0-1078_5.4.0-1078.86~18.04.1_amd64.deb
+sudo apt -f install
+```
+
+Then we can install all we want:
+
+```shell
+sudo apt-get install -y iperf
+sudo apt-get install -y iperf3
+```
+
+### Measure the networks using iPerf3
+
+First, we configure the **ServerVM** as an iPerf3 server:
+
+```shell
+iPerf3 -s
+```
+
+Note the portnum assigned to the Server and use iPerf3 on the **Client VM** to communicate with the Server:
+
+```shell
+iperf3 -u -c 10.0.2.163 -b <portnum>
+```
+
+The Client VM will send/receive an amount of packets with the Server and this process will last for 10 secs. Both ends will show the info:
+
+```shell
+Connecting to host 10.0.2.163, port 5201
+[  4] local 10.0.2.86 port 35417 connected to 10.0.2.163 port 5201
+[ ID] Interval           Transfer     Bandwidth       Total Datagrams
+[  4]   0.00-1.00   sec  88.0 KBytes   721 Kbits/sec  11
+[  4]   1.00-2.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   2.00-3.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   3.00-4.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   4.00-5.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   5.00-6.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   6.00-7.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   7.00-8.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   8.00-9.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   9.00-10.00  sec  80.0 KBytes   655 Kbits/sec  10
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bandwidth       Jitter    Lost/Total Datagrams
+[  4]   0.00-10.00  sec   808 KBytes   662 Kbits/sec  0.060 ms  0/100 (0%)
+[  4] Sent 100 datagrams
+```
+
+We can then read the Bandwidth, jitter and datagrams loss from the measurement results. If we open tcpdump on the router, we can also find that all the networks traffics pass through the router and they are all using UDP/IP protocol.
+
+ <img src="./src/img4-1.png" width="100%">
+
+## Add delay/loss to the virtual machines and measure the networks
+
+To emulate the network delay and network loss scenarios, we can manually add some delay and loss to the ip config and explore the iPerf measurement results again.
+
+**First**, we add delay to both the Server and the Client with the following commands:
+
+```shell
+sudo tc qdisc add dev eth0 root netem delay 100ms
+```
+And we do the measurements again. The results are as following:
+
+```shell
+Connecting to host 10.0.2.163, port 5201
+[  4] local 10.0.2.86 port 55948 connected to 10.0.2.163 port 5201
+[ ID] Interval           Transfer     Bandwidth       Total Datagrams
+[  4]   0.00-1.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   1.00-2.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   2.00-3.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   3.00-4.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   4.00-5.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   5.00-6.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   6.00-7.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   7.00-8.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   8.00-9.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   9.00-10.00  sec  80.0 KBytes   655 Kbits/sec  10
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bandwidth       Jitter    Lost/Total Datagrams
+[  4]   0.00-10.00  sec   800 KBytes   655 Kbits/sec  0.143 ms  0/99 (0%)
+[  4] Sent 99 datagrams
+```
+
+We can find that, the bandwidth has not changed at all. But the jitter can be twice as much. **Therefore**, the networks delay can influence the jitter but not the bandwidth.
+
+**Then**, we remove the delay and add loss to both virtual machines (note that this time we use **change** command but not **add**):
+
+```shell
+sudo tc qdisc change dev eth0 root netem delay 0ms loss 10%
+```
+
+And we get the measurements results again:
+
+```shell
+Connecting to host 10.0.2.163, port 5201
+[  4] local 10.0.2.86 port 35747 connected to 10.0.2.163 port 5201
+[ ID] Interval           Transfer     Bandwidth       Total Datagrams
+[  4]   0.00-1.00   sec  88.0 KBytes   721 Kbits/sec  11
+[  4]   1.00-2.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   2.00-3.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   3.00-4.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   4.00-5.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   5.00-6.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   6.00-7.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   7.00-8.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   8.00-9.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   9.00-10.00  sec  80.0 KBytes   655 Kbits/sec  10
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bandwidth       Jitter    Lost/Total Datagrams
+[  4]   0.00-10.00  sec   808 KBytes   662 Kbits/sec  0.084 ms  10/100 (10%)
+[  4] Sent 100 datagrams
+```
+
+As we expected, the jitter gets back to normal because we set the delay back to 0ms. And the datagrams loss gets up to 10%, because we set the loss to be 10%. As always, the bandwidth is still the same.
+
+**Next**, we delete the configurations we set just now:
+
+```shell
+sudo tc qdisc del dev eth0 root
+```
+
+And we set another scenario: we limit the networks rate to 100mbit, latency to 1 ms and burst 9015:
+
+```shell
+sudo tc qdisc add dev eth0 root tbf rate 100mbit latency 1ms burst 9015
+```
+
+We measure again and the results:
+
+```shell
+Connecting to host 10.0.2.163, port 5201
+[  4] local 10.0.2.86 port 45441 connected to 10.0.2.163 port 5201
+[ ID] Interval           Transfer     Bandwidth       Total Datagrams
+[  4]   0.00-1.00   sec  88.0 KBytes   721 Kbits/sec  11
+[  4]   1.00-2.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   2.00-3.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   3.00-4.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   4.00-5.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   5.00-6.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   6.00-7.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   7.00-8.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   8.00-9.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   9.00-10.00  sec  80.0 KBytes   655 Kbits/sec  10
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bandwidth       Jitter    Lost/Total Datagrams
+[  4]   0.00-10.00  sec   808 KBytes   662 Kbits/sec  0.071 ms  0/100 (0%)
+[  4] Sent 100 datagrams
+```
+
+We can find that all the results remain the same, because the existing bandwidth is way lower than the limitaions we set, so the limitations do not affect the results. If we set the rate to be really small, and we will see that the data transferring rate will desend fast.
+
+**Last**, we set speed for the instance:
+```shell
+ubuntu@ip-10-0-2-86:~$ sudo ethtool -s eth0 speed 10
+Cannot get current device settings: Operation not supported
+  not setting speed
+```
+
+We can find that AWS does not allow us to excecute this operation, because every instance has a fixed bandwidth resource and it is not allowed to modify.
+
+### Add delay / loss on the Router and measure again
+
+Let's do the same thing on the & only on **router**, launch the Server and Client using iPerf3 again and see what will happen.
+
+**First**, we add 100ms delay for the router. 
+
+❗Note that: Router uses eth1 as the internal network interface. **We should add delay to eth1 but not eth0**!!!
+
+Here are the results:
+
+```shell
+Connecting to host 10.0.2.163, port 5201
+[  4] local 10.0.2.86 port 59975 connected to 10.0.2.163 port 5201
+[ ID] Interval           Transfer     Bandwidth       Total Datagrams
+[  4]   0.00-1.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   1.00-2.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   2.00-3.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   3.00-4.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   4.00-5.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   5.00-6.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   6.00-7.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   7.00-8.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   8.00-9.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   9.00-10.00  sec  80.0 KBytes   655 Kbits/sec  10
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bandwidth       Jitter    Lost/Total Datagrams
+[  4]   0.00-10.00  sec   800 KBytes   655 Kbits/sec  0.059 ms  0/99 (0%)
+[  4] Sent 99 datagrams
+```
+
+We can find that the results are similar as we got from the Server/Client settings: **the Jitter can be higher due to the higher delay.** If we look into the info from the Server end, we can even find the jitter varies a lot within these 10 secs and the delay can really affect the network stablily.
+
+**Then** we set Router delay to 0ms and loss to 10%. Here are the results:
+
+```shell
+Connecting to host 10.0.2.163, port 5201
+[  4] local 10.0.2.86 port 35957 connected to 10.0.2.163 port 5201
+[ ID] Interval           Transfer     Bandwidth       Total Datagrams
+[  4]   0.00-1.00   sec  88.0 KBytes   721 Kbits/sec  11
+[  4]   1.00-2.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   2.00-3.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   3.00-4.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   4.00-5.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   5.00-6.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   6.00-7.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   7.00-8.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   8.00-9.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   9.00-10.00  sec  80.0 KBytes   655 Kbits/sec  10
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bandwidth       Jitter    Lost/Total Datagrams
+[  4]   0.00-10.00  sec   808 KBytes   662 Kbits/sec  0.087 ms  11/100 (11%)
+```
+
+Same, the results from iPerf3 say that the average loss comes up to approximately 10%, as we expected.
+
+**Next**, we limit the networks rate to 100mbit, latency to 1 ms and burst 9015. Here are the results:
+
+```shell
+Connecting to host 10.0.2.163, port 5201
+[  4] local 10.0.2.86 port 54763 connected to 10.0.2.163 port 5201
+[ ID] Interval           Transfer     Bandwidth       Total Datagrams
+[  4]   0.00-1.00   sec  88.0 KBytes   721 Kbits/sec  11
+[  4]   1.00-2.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   2.00-3.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   3.00-4.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   4.00-5.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   5.00-6.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   6.00-7.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   7.00-8.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   8.00-9.00   sec  80.0 KBytes   655 Kbits/sec  10
+[  4]   9.00-10.00  sec  80.0 KBytes   655 Kbits/sec  10
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bandwidth       Jitter    Lost/Total Datagrams
+[  4]   0.00-10.00  sec   808 KBytes   662 Kbits/sec  0.031 ms  0/100 (0%)
+[  4] Sent 100 datagrams
+```
+
+**Same**, it does not affect the networks at all, as expected.
+
+#### Conclusion:
+
+- Either we add delay / loss / rate limit on the Server, Client or Router end, the network measurement results can be similar. If we add to them at the same time, the limit of network can be the bottleneck among these three components.
+- Delay: affect the network connections' stability and add jitters.
+- Loss: affect the datagrams loss rate.
+- Rate limit: affect the bandwidth.
+
+---
+
+## The End
+
+This concludes the whole network emulations on AWS. We can do more on AWS, such as building internal networks structures based on these topological relations, or building some CDN servers or machine learning computing servers and using parallel computing on AWS. Anyway, this way to build a network is pretty fun!
+
+If you have any concerns, please contact me at 

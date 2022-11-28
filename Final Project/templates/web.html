@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trojan Track: Your Solar panels security professionals</title>
+    <link rel="icon" type="image/x-icon" href="../static/appIcon.png">
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Comfortaa" />
+    <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
+
+    <style type = "text/css">
+        body{
+            background-color: rgb(255, 255, 255);
+        }
+
+        .Banning{
+            height: 30px;
+            /* background:url('../static/banning.jpg'); */
+            /* background-repeat: no-repeat; */
+            /* background-size: 100%;
+            background-position: 0px -705px; */
+            background-color: rgba(1, 186, 255, 0.84);
+
+        }
+
+        .BanningText{
+            position: absolute;
+            padding: 0;
+            padding-top: 8px;
+            margin: 0;
+            left: 14px;
+            font-family: 'Comfortaa';
+            font-size: 12px;
+            font-weight: bold;
+
+        }
+        
+        .Title{
+            background: url('../static/banning.jpg') center center;
+            height: 225px;
+            vertical-align:middle;
+            text-align:center;
+            margin-top: 0px;
+        }
+
+        .BigTitle{
+            font-family: 'Montserrat';
+            font-weight: bold;
+            font-size: 32px;
+            color: rgb(122, 122, 122);
+            text-shadow: 1.5px 1.5px rgb(0, 162, 255);
+            text-align: center;
+            vertical-align: middle;
+            text-decoration: none;
+            position: relative;
+            top: 55px
+            
+        }
+
+        .SubTitle{
+            font-family: 'Montserrat';
+            font-weight: bold;
+            font-size: 24px;
+            color: rgb(122, 122, 122);
+            text-shadow: 1.5px 1.5px rgb(0, 162, 255);
+            text-align: center;
+            vertical-align: middle;
+            text-decoration: none;
+            position: relative;
+            top: 35px;
+        }
+
+        .map{
+            padding-top: 20px;
+            padding-bottom: 20px;
+            left: 22.5%;
+        }
+
+        .CurrTime{
+            text-align: center;
+            vertical-align: center;
+            font-family: "Comfortaa";
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .CurrCoordinate{
+            text-align: center;
+            vertical-align: center;
+            font-family: "Comfortaa";
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .Controls{
+            position: relative;
+            width: 50%;
+            height: 200px;
+            left: 25%;
+            background-color: #e7e7e7;
+            box-shadow: 10px 10px 10px aliceblue;
+            border-radius: 5px;
+        }
+
+        .CtrTitle{
+            font-family: Comfortaa;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            vertical-align: center;
+            position: absolute;
+            top: 10%;
+            width: 50%;
+            left: 25%;
+        }
+
+        .Tail{
+            background-color: #eeeeee;
+            top: 50px;
+            height: 200px;
+            margin-top: 50px;
+        }
+
+        .Tail p{
+            font-family: 'Montserrat';
+            font-size: 14px;
+        }
+
+        .Tail1 {
+            position: absolute;
+            width: 30%;
+            left: 25%;
+            padding-top: 40px;
+        }
+        .Tail2 {
+            position: absolute;
+            width: 30%;
+            left: 50%;
+            padding-top: 10px;
+        }
+        /* Normal white Button as seen on Google.com*/
+        button {
+            font-family: Comfortaa;
+            color: #444444;
+            background: #F3F3F3;
+            border: 1px #DADADA solid;
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 9pt;
+            outline: none;
+            box-shadow: 3px 3px 2px #cfd6de;
+        }
+
+        button:hover {
+            border: 1px #C6C6C6 solid;
+            box-shadow: 2px 2px 1px #EAEAEA;
+            color: #333333;
+            background: #F7F7F7;
+        }
+
+        button:active {
+            box-shadow: inset 1px 1px 1px #DFDFDF;
+        }
+
+        .btn1{
+            position: absolute;
+            top: 50%;
+            left: 15%;
+            width: 20%;
+            height: 20%;
+        }
+        .btn2{
+            position: absolute;
+            top: 50%;
+            left: 40%;
+            width: 20%;
+            height: 20%;
+        }
+        .btn3{
+            position: absolute;
+            top: 50%;
+            left: 65%;
+            width: 20%;
+            height: 20%;
+        }
+
+        {#{ margin:0; padding:0;}#}
+    </style>
+
+    {{ xdot_map.js }}
+
+    <script>
+        function btnReset(){
+            alert("Button Reset GPS is clicked!");
+        }
+
+        function btnSoundAlarm(){
+            alert("Button Sound Alarm is clicked!");
+        }
+
+        function btnCloseAlarm(){
+            alert("Button Close Alarm is clicked!");
+        }
+    </script>
+
+</head>
+
+
+<body>
+
+    <div class = "Banning">
+        <p class = "BanningText">
+            TrojanTrack
+        </p>
+
+    </div>
+
+    <div class = "Title">
+        <p class = "BigTitle">
+            Trojan Track
+        </p>
+        <p class = "SubTitle">
+            Your Solar panels security professionals
+        </p>
+    </div>
+
+   <div class = "map">
+        {{ xdot_map.html }}
+       <p class = "CurrTime">
+           Last time updated is:  {{ timestamp }}
+       </p>
+       <p class = "CurrCoordinate">
+           Current GPS coordinate is:  {{ lat }}, {{ lng }}
+       </p>
+   </div>
+
+    <div class = "Controls">
+        <p class = "CtrTitle">Remote Controller Panel</p>
+        <button class = "btn1" onclick="btnReset()">Reset GPS</button>
+        <button class = "btn2" onclick="btnSoundAlarm()">Sound Alarm</button>
+        <button class = "btn3" onclick="btnCloseAlarm()">Close Alarm</button>
+    </div>
+
+    <div class = "Tail">
+
+        <div class = "Tail1">
+           <p style="text-align: center; font-weight: bold">
+               EE542-Internet and Cloud Computing
+           </p>
+           <p style="text-align: center;">
+               By Professor Young Cho
+           </p>
+            <p style="text-align: center;">
+               University of Southern California ✌
+           </p>
+       </div>
+
+       <div class = "Tail2">
+           <p style="text-align: center; font-weight: bold">
+               Developed by Team Linabell:
+           </p>
+           <p style="text-align: center;">
+               Yixing WU
+           </p>
+           <p style="text-align: center;">
+               Donghao ZHAO
+           </p>
+           <p style="text-align: center;">
+               Boyang XIAO
+           </p>
+           <p style="text-align: center; font-weight: bold">
+               Los Angeles, CA, 90007
+           </p>
+
+       </div>
+    </div>
+
+
+</body>
+
+
+</html>

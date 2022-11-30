@@ -10,17 +10,19 @@
 
     <style type = "text/css">
         body{
-            background-color: rgb(255, 255, 255);
+            background-color: rgb(252, 252, 252);
+            margin: 0;
+            padding: 0;
+            background-image: linear-gradient(rgba(255,255,255,0.85), rgba(255,255,255,0.85)), url("../static/banning.jpg");
         }
 
         .Banning{
+            position: -webkit-sticky;
+            position: sticky;
+            top:0;
             height: 30px;
-            /* background:url('../static/banning.jpg'); */
-            /* background-repeat: no-repeat; */
-            /* background-size: 100%;
-            background-position: 0px -705px; */
-            background-color: rgba(1, 186, 255, 0.84);
-
+            background-color: rgb(178, 206, 202);
+            z-index: 999;
         }
 
         .BanningText{
@@ -36,33 +38,39 @@
         }
         
         .Title{
-            background: url('../static/banning.jpg') center center;
+            position: relative;
+            top: -32px;
+
+            {#background: url('../static/solar.jpg') center center no-repeat;#}
+            background-image: url("../static/solar.jpg");
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
             height: 225px;
             vertical-align:middle;
             text-align:center;
-            margin-top: 0px;
         }
 
         .BigTitle{
             font-family: 'Montserrat';
             font-weight: bold;
             font-size: 32px;
-            color: rgb(122, 122, 122);
-            text-shadow: 1.5px 1.5px rgb(0, 162, 255);
+            color: rgb(207, 214, 222);
+            text-shadow: 1.5px 1.5px rgb(84, 104, 137);
             text-align: center;
             vertical-align: middle;
             text-decoration: none;
             position: relative;
             top: 55px
-            
+
         }
 
         .SubTitle{
             font-family: 'Montserrat';
             font-weight: bold;
             font-size: 24px;
-            color: rgb(122, 122, 122);
-            text-shadow: 1.5px 1.5px rgb(0, 162, 255);
+            color: rgb(207, 214, 222);
+            text-shadow: 1.5px 1.5px rgb(84, 104, 137);
             text-align: center;
             vertical-align: middle;
             text-decoration: none;
@@ -71,7 +79,6 @@
         }
 
         .map{
-            padding-top: 20px;
             padding-bottom: 20px;
             left: 22.5%;
         }

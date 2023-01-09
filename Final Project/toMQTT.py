@@ -49,6 +49,16 @@ class MQTT:
         t.sleep(0.1)
         print('Publish End')
 
+    def push_message_mqtt(self, info):
+        # Publish message to server desired number of times.
+        print('Begin Publish')
+        data = "{}".format(info)
+        message = {"message": data}
+        self.mqtt_connection.publish(topic="alert", payload=json.dumps(message), qos=mqtt.QoS.AT_LEAST_ONCE)
+        print("Published: '" + json.dumps(message) + "' to the topic: " + self.TOPIC)
+        t.sleep(0.1)
+        print('Publish End')
+
     def disconnect(self):
         disconnect_future = self.mqtt_connection.disconnect()
         disconnect_future.result()

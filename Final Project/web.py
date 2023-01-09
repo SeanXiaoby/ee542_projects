@@ -1,5 +1,7 @@
+import time
+
 import boto3
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 from flask_googlemaps import GoogleMaps, Map, icons
 from dynaconf import FlaskDynaconf
 from datetime import datetime
@@ -23,11 +25,8 @@ speaker = False
 def set_alarm(alarm):
     global speaker
     if alarm and not speaker:
-        mqtt.push_message("alarm!")
+        mqtt.push_message_mqtt("alert")
         speaker = True
-    elif not alarm and speaker:
-        mqtt.push_message("stop!")
-        speaker = False
 
 
 def read_db():
@@ -38,19 +37,22 @@ def read_db():
     record = False
     for item in response['Items']:
         m = dict()
-        m["infobox"] = item['xdotId']['N']
+        m["xdotId"] = item['xdotId']['N']
         m['lat'] = item['lat']['N']
         m['lng'] = item['lng']['N']
         if item['moved']['BOOL']:
-            m['icon'] = icons.dots.red
             record = True
         else:
-            m['icon'] = icons.dots.blue
+            record = False
+        m['moved'] = item['moved']['BOOL']
+        now = datetime.now()
+        m['timestamp'] = now.strftime("%H:%M:%S, %Y-%m-%d")
         markers.append(m)
-    set_alarm(record)
+        set_alarm(record)
     return markers
 
-def read_db_time() :
+
+def read_db_time():
     response = client.scan(
         TableName='final',
     )
@@ -60,21 +62,31 @@ def read_db_time() :
 
     return current_time
 
-
 @app.route("/")
 def map_created_in_view():
-    xdot_map = Map(
-        identifier="xdot_map",
-        varname="xdot_map",
-        lat=34.022699,
-        lng=-118.285034,
-        markers=read_db(),
-        style="height:400px;width:55%;margin:0;color:#242f3e;",
-    )
 
-    temp_markers = read_db()
+    return render_template("web.html", init_data=read_db())
 
-    return render_template("web.html", xdot_map=xdot_map, key=api, timestamp = read_db_time(), lat = temp_markers[0]['lat'], lng = temp_markers[0]['lng'])
+
+@app.route("/update_markers", methods=['GET'])
+def update_markers():
+    return jsonify(result = read_db())
+
+
+@app.route("/sound_alarm")
+def sound_alarm():
+    mqtt.push_message_mqtt("alert")
+    print("Alarm sound!")
+    return ("sound!")
+
+
+@app.route("/stop_alarm")
+def stop_alarm():
+    global speaker
+    mqtt.push_message_mqtt("stop")
+    speaker = False
+    print("Alarm stop!")
+    return ("stop!")
 
 
 if __name__ == "__main__":

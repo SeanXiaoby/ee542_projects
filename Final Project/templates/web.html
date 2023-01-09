@@ -3,13 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{#    <meta http-equiv="refresh" content="1">#}
     <title>Trojan Track: Your Solar panels security professionals</title>
     <link rel="icon" type="image/x-icon" href="../static/appIcon.png">
     <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Comfortaa" />
     <link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAuu60KfXjZiyDMocgn9dCCtz-PAaU2KfE&callback=initMap"
+    type="text/javascript"></script>
+    <script  src="../static/jquery-3.6.0.min.js"></script>
 
     <style type = "text/css">
-        body{
+body{
             background-color: rgb(252, 252, 252);
             margin: 0;
             padding: 0;
@@ -36,7 +40,7 @@
             font-weight: bold;
 
         }
-        
+
         .Title{
             position: relative;
             top: -32px;
@@ -79,8 +83,14 @@
         }
 
         .map{
+            padding-top: 20px;
             padding-bottom: 20px;
+        }
+
+        #idMap{
             left: 22.5%;
+            height:400px;
+            width:55%
         }
 
         .CurrTime{
@@ -165,55 +175,244 @@
             background: #F7F7F7;
         }
 
-        button:active {
-            box-shadow: inset 1px 1px 1px #DFDFDF;
-        }
+button:active {
+    box-shadow: inset 1px 1px 1px #DFDFDF;
+}
 
-        .btn1{
-            position: absolute;
-            top: 50%;
-            left: 15%;
-            width: 20%;
-            height: 20%;
-        }
-        .btn2{
-            position: absolute;
-            top: 50%;
-            left: 40%;
-            width: 20%;
-            height: 20%;
-        }
-        .btn3{
-            position: absolute;
-            top: 50%;
-            left: 65%;
-            width: 20%;
-            height: 20%;
-        }
+#btn2 {
+    position: absolute;
+    top: 50%;
+    left: 15%;
+    width: 20%;
+    height: 20%;
+}
 
-        {#{ margin:0; padding:0;}#}
+#btn3 {
+    position: absolute;
+    top: 50%;
+    left: 40%;
+    width: 20%;
+    height: 20%;
+}
+
+#btn1 {
+    position: absolute;
+    top: 50%;
+    left: 65%;
+    width: 20%;
+    height: 20%;
+}
+
+#ctrInfo {
+    font-family: Comfortaa;
+    font-size: 18px;
+    font-weight: bold;
+    position: absolute;
+    top: 80%;
+    left: 15%;
+    width: 70%;
+    text-align: center;
+}
+
     </style>
 
-    {{ xdot_map.js }}
-
     <script>
-        function btnReset(){
-            alert("Button Reset GPS is clicked!");
+
+        function ShowCtrInfo(info) {
+            document.getElementById("ctrInfo").innerHTML = info;
+            $("#ctrInfo").fadeIn(1000);
         }
 
-        function btnSoundAlarm(){
-            alert("Button Sound Alarm is clicked!");
+        function btnReset() {
+            initMap();
+
+            ShowCtrInfo("xDot info has been reset!");
+
+            setTimeout(function () {
+                $("#ctrInfo").fadeOut(1000);
+            }, 3000);
         }
 
-        function btnCloseAlarm(){
-            alert("Button Close Alarm is clicked!");
+        function btnSoundAlarm() {
+            $.getJSON('/sound_alarm',
+                function (data) {
+
+                });
+
+            ShowCtrInfo("Alarm sound request has been sent!");
+
+            setTimeout(function () {
+                $("#ctrInfo").fadeOut(1000);
+            }, 3000);
+        }
+
+        function btnCloseAlarm() {
+            $.getJSON('/stop_alarm',
+                function (data) {
+                    //do nothing
+                });
+
+            ShowCtrInfo("Stop alarm request has been sent!");
+
+            setTimeout(function () {
+                $("#ctrInfo").fadeOut(1000);
+            }, 3000);
         }
     </script>
+
+    <script>
+        var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+        setInterval(update_text, 1000);
+
+        function update_text() {
+            $.getJSON($SCRIPT_ROOT + "/update_markers",
+                function (data) {
+                    let curr_data = data.result;
+                    console.log(data.result);
+                    document.getElementById("idCurrTime").innerHTML = "Last Update time is: " + curr_data[0]["timestamp"];
+                    document.getElementById("idCurrCoordinate").innerHTML = "Current xDot GPS coordinate is: " + curr_data[0]["lat"] + ', ' + curr_data[0]["lng"]
+                    {#myMap.setCenter({lat: parseFloat(curr_data[0]["lat"]), lng: parseFloat(curr_data[0]["lng"])});#}
+                    myMarker.setPosition({lat: parseFloat(curr_data[0]["lat"]), lng: parseFloat(curr_data[0]["lng"])});
+                    if (curr_data[0]["moved"] == true) {
+                        myMarker.setIcon('http://maps.google.com/mapfiles/ms/icons/red-dot.png');
+                    } else {
+                        myMarker.setIcon('http://maps.google.com/mapfiles/ms/icons/purple-dot.png');
+                    }
+                    let strStatus = Normal;
+                    if(curr_data[0]["moved"]){
+                        strStatus = "Moved!!";
+                    }
+
+                    let contentString_curr =
+                        '<div>' +
+                        '<div>' +
+                        "</div>" +
+                        '<h2 >xDot #' +
+                            curr_data[0]["xdotId"] +
+                        '</h2>' +
+                        '<div>' +
+                        '<p>Current Coordinate: lat: ' +
+                            curr_data[0]["lat"]+
+                        ', lng:' +
+                            curr_data[0]["lng"]+
+                        ' </p>' +
+                        '<p>Status: ' +
+                            strStatus +
+                        '</p>' +
+                        '<p>Updated Time: ' +
+                            curr_data[0]["timestamp"] +
+                        '</p>' +
+                        "</div>" +
+                        "</div>";
+
+
+                })
+        }
+    </script>
+
+    <script type="text/javascript">
+
+        var myMap;
+        var myMarker;
+
+        function initMap() {
+            myMap = new google.maps.Map(document.getElementById('idMap'), {
+                center: {lat: parseFloat({{ init_data[0]["lat"] }}), lng: parseFloat({{ init_data[0]["lng"] }})},
+                zoom: 14
+            });
+            myMarker = new google.maps.Marker({
+                position: {lat: parseFloat({{ init_data[0]["lat"] }}), lng: parseFloat({{ init_data[0]["lng"] }})},
+                map: myMap,
+                icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+            })
+            demoMarker_1 = new google.maps.Marker({
+                position: {lat: 34.033834157004826, lng: -118.2920500884591},
+                map: myMap,
+                icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+            })
+            demoMarker_2 = new google.maps.Marker({
+                position: {lat: 34.02798495828368, lng: -118.29501586003208},
+                map: myMap,
+                icon: 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'
+            })
+
+            contentString_main =
+                '<div>' +
+                '<div>' +
+                "</div>" +
+                '<h2 >xDot #1</h2>' +
+                '<div>' +
+                "<p>Current Coordinate: lat: 34.0338, lng: -118.2920</p>" +
+                '<p>Status: Normal</p>' +
+                "</div>" +
+                "</div>";
+
+            contentString_1 =
+                '<div>' +
+                '<div>' +
+                "</div>" +
+                '<h2 >xDot #2</h2>' +
+                '<div>' +
+                "<p>Current Coordinate: lat: 34.0338, lng: -118.2920</p>" +
+                '<p>Status: Normal</p>' +
+                "</div>" +
+                "</div>";
+
+            contentString_2 =
+                '<div>' +
+                '<div>' +
+                "</div>" +
+                '<h2 >xDot #3</h2>' +
+                '<div>' +
+                "<p>Current Coordinate: lat: 34.0279, lng: -118.2950</p>" +
+                '<p>Status: Normal</p>' +
+                "</div>" +
+                "</div>";
+
+            const infowindow_1 = new google.maps.InfoWindow({
+                content: contentString_1,
+                ariaLabel: "xDot Info Box",
+            });
+
+            demoMarker_1.addListener("click", () => {
+                infowindow_1.open({
+                    anchor: demoMarker_1,
+                    myMap,
+                });
+            });
+
+            const infowindow_2 = new google.maps.InfoWindow({
+                content: contentString_2,
+                ariaLabel: "xDot Info Box",
+            });
+
+            demoMarker_2.addListener("click", () => {
+                infowindow_2.open({
+                    anchor: demoMarker_2,
+                    myMap,
+                });
+            });
+
+            infowindow_main = new google.maps.InfoWindow({
+                content: contentString_main,
+                ariaLabel: "xDot Info Box",
+            });
+
+            myMarker.addListener("click", () => {
+                infowindow_main.open({
+                    anchor: myMarker,
+                    myMap,
+                });
+            });
+        }
+    </script>
+
+
 
 </head>
 
 
-<body>
+<body onload="initMap()">
 
     <div class = "Banning">
         <p class = "BanningText">
@@ -226,36 +425,38 @@
         <p class = "BigTitle">
             Trojan Track
         </p>
-        <p class = "SubTitle">
+        <p class="SubTitle">
             Your Solar panels security professionals
         </p>
     </div>
 
-   <div class = "map">
-        {{ xdot_map.html }}
-       <p class = "CurrTime">
-           Last time updated is:  {{ timestamp }}
-       </p>
-       <p class = "CurrCoordinate">
-           Current GPS coordinate is:  {{ lat }}, {{ lng }}
-       </p>
-   </div>
+    <div class="map">
+        <div id="idMap"></div>
 
-    <div class = "Controls">
-        <p class = "CtrTitle">Remote Controller Panel</p>
-        <button class = "btn1" onclick="btnReset()">Reset GPS</button>
-        <button class = "btn2" onclick="btnSoundAlarm()">Sound Alarm</button>
-        <button class = "btn3" onclick="btnCloseAlarm()">Close Alarm</button>
+        <p class="CurrTime" id="idCurrTime">
+            Last time updated is: {{ init_data[0]["timestamp"] }}
+        </p>
+        <p class="CurrCoordinate" id="idCurrCoordinate">
+            Current xDot GPS coordinate is: {{ init_data[0]["lat"] }}, {{ init_data[0]["lng"] }}
+        </p>
     </div>
 
-    <div class = "Tail">
+    <div class="Controls">
+        <p class="CtrTitle">Remote Controller Panel</p>
+        <button id="btn1" onclick="btnReset()">Reset GPS</button>
+        <button id="btn2" onclick="btnSoundAlarm()">Sound Alarm</button>
+        <button id="btn3" onclick="btnCloseAlarm()">Close Alarm</button>
+        <div id="ctrInfo"></div>
+    </div>
 
-        <div class = "Tail1">
-           <p style="text-align: center; font-weight: bold">
-               EE542-Internet and Cloud Computing
-           </p>
-           <p style="text-align: center;">
-               By Professor Young Cho
+    <div class="Tail">
+
+        <div class="Tail1">
+            <p style="text-align: center; font-weight: bold">
+                EE542-Internet and Cloud Computing
+            </p>
+            <p style="text-align: center;">
+                By Professor Young Cho
            </p>
             <p style="text-align: center;">
                University of Southern California ✌

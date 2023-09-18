@@ -10,10 +10,10 @@
 
 ### Index
 
-- [Lab 01](https://github.com/SeanXiaoby/ee542_projects/tree/main/Assignment_01)
-- [Lab 02](https://github.com/SeanXiaoby/ee542_projects/tree/main/Assignment_02)
-- [Lab 03](https://github.com/SeanXiaoby/ee542_projects/tree/main/Assignment_03)
-- [Final Project](https://github.com/SeanXiaoby/ee542_linabell_team/tree/main/Final%20Project)
+- [Topic 01: Building a Client-router-client model based on Linux and VirtualBox virtual machines](https://github.com/SeanXiaoby/ee542_projects/tree/main/Assignment_01)
+- [Topic 02: Building a Server-Router-Client topological model on AWS](https://github.com/SeanXiaoby/ee542_projects/tree/main/Assignment_02)
+- [Topic 03: Measuring networks performance on AWS VPC](https://github.com/SeanXiaoby/ee542_projects/tree/main/Assignment_03)
+- [Final Project: IoT & Cloud based Tracking system](https://github.com/SeanXiaoby/ee542_projects/tree/main/Final%20Project)
 
 ---
 ### Notes

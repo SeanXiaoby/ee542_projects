@@ -13,7 +13,7 @@
 - [Lab 01](https://github.com/SeanXiaoby/ee542_projects/tree/main/Assignment_01)
 - [Lab 02](https://github.com/SeanXiaoby/ee542_projects/tree/main/Assignment_02)
 - [Lab 03](https://github.com/SeanXiaoby/ee542_projects/tree/main/Assignment_03)
-- [Lab 04](https://github.com/SeanXiaoby/ee542_linabell_team/tree/main/Lab04)
+- [Final Project](https://github.com/SeanXiaoby/ee542_linabell_team/tree/main/Final%20Project)
 
 ---
 ### Notes
